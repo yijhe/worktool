@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRI科 月排班管理儀表板｜2026/06/08–2026/07/05</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2A4A; --ink-soft:#4A5875; --bg:#F5F6F8; --surface:#FFFFFF; --line:#E3E6EC;
+    --teal:#0F8B8D; --teal-deep:#0B6668; --teal-tint:#E3F3F2;
+    --amber:#E2793A; --amber-tint:#FCEADD;
+    --magenta:#A24C74; --magenta-tint:#F3E4EC;
+    --gold:#B78A2E; --gold-tint:#F6EDD8;
+    --slate:#94A3B8; --slate-tint:#EEF1F5;
+    --coral:#D1495B; --coral-tint:#FBE6E9;
+    --radius:10px; --shadow:0 1px 2px rgba(27,42,74,.06), 0 4px 14px rgba(27,42,74,.06);
+
+    /* unit family colors */
+    --u-b2d:#0F8B8D; --u-b2d-t:#E3F3F2;
+    --u-b2n:#145C73; --u-b2n-t:#DCEEF0;
+    --u-hcd:#2E75B6; --u-hcd-t:#E5EFF9;
+    --u-hcn:#5B4B9E; --u-hcn-t:#EBE6F6;
+    --u-f2:#2E9E6C;  --u-f2-t:#E1F3E9;
+    --u-som:#C1762E; --u-som-t:#F8ECDC;
+    --u-sop:#B65C82; --u-sop-t:#F7E5ED;
+    --u-oth:#8D7B5C; --u-oth-t:#F0EADF;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg); color:var(--ink); font-family:'Noto Sans TC', system-ui, -apple-system, sans-serif; -webkit-font-smoothing:antialiased; line-height:1.5;}
+  h1,h2,h3{font-family:'Noto Serif TC', serif; margin:0; color:var(--ink);}
+  .mono{font-family:'Roboto Mono', ui-monospace, monospace;}
+  a{color:var(--teal-deep);}
+
+  header.app-header{background:linear-gradient(155deg,#16233F 0%, #1B2A4A 55%, #0F3A44 100%); color:#fff; padding:28px 20px 20px; position:relative; overflow:hidden;}
+  header.app-header::after{content:""; position:absolute; inset:0;
+    background:radial-gradient(600px 200px at 85% -20%, rgba(15,139,141,.35), transparent 60%), radial-gradient(500px 260px at 10% 120%, rgba(226,121,58,.18), transparent 60%);
+    pointer-events:none;}
+  .header-inner{max-width:1180px;margin:0 auto;position:relative;}
+  .eyebrow{font-family:'Roboto Mono', monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#8FD6D3; margin-bottom:8px;}
+  header.app-header h1{font-size:clamp(22px,4vw,32px); font-weight:700; color:#fff; letter-spacing:.01em;}
+  .subtitle{color:#B9C3DA;font-size:14px;margin-top:6px;}
+  .data-source-row{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:8px; font-size:12.5px;}
+  .source-badge{display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; font-weight:600;}
+  .source-badge.live{background:rgba(28,147,160,.22); color:#7CE0E8; border:1px solid rgba(124,224,232,.35);}
+  .source-badge.embedded{background:rgba(226,121,58,.2); color:#F5B98A; border:1px solid rgba(245,185,138,.35);}
+  .source-badge.loading{background:rgba(255,255,255,.08); color:#B9C3DA; border:1px solid rgba(255,255,255,.15);}
+  .refresh-btn{appearance:none; border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.06); color:#DCE3F2; border-radius:7px; padding:4px 10px; font-size:12px; cursor:pointer;}
+  .refresh-btn:hover{background:rgba(255,255,255,.14);}
+  .period-label{color:#B9C3DA; font-size:12.5px; margin-right:2px;}
+  .period-select{
+    font-family:'Noto Sans TC',sans-serif; font-size:12.5px; padding:4px 10px;
+    border:1px solid rgba(255,255,255,.25); border-radius:7px;
+    background:rgba(255,255,255,.06); color:#DCE3F2; cursor:pointer;
+  }
+  .period-select option{color:#1B2A4A;}
+  .period-row{display:flex; align-items:center; gap:8px; margin-top:6px; flex-wrap:wrap;}
+  .period-row label{font-size:12.5px; color:#B9C3DA;}
+  .period-select{background:rgba(255,255,255,.08); color:#EAF0FA; border:1px solid rgba(255,255,255,.22); border-radius:7px; padding:5px 9px; font-size:12.5px; min-width:0;}
+  .period-select option{color:#111;}
+
+  .day-strip-mini{margin-top:22px; display:flex; gap:3px; background:rgba(255,255,255,.04); padding:14px 14px 10px; border-radius:var(--radius); border:1px solid rgba(255,255,255,.08); overflow-x:auto; scroll-behavior:smooth;}
+  .day-strip-mini .day{flex:1 0 26px; min-width:26px; display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer;}
+  .day-strip-mini .day .d{font-size:10px;color:#9FB0CC;font-family:'Roboto Mono',monospace;}
+  .day-strip-mini .day .bar{width:100%; height:20px; border-radius:5px; background:#57699E; transition:filter .12s ease, transform .12s ease;}
+  .day-strip-mini .day:hover .bar{filter:brightness(1.35); transform:scaleY(1.15); transform-origin:bottom;}
+  .day-strip-mini .day .bar.weekend{background:#1C93A0;}
+  .day-strip-mini .day .bar.holiday{background:#D1495B;}
+  .day-strip-mini .day .wd{font-size:10px;color:#7F8FB0;}
+  .day-strip-mini .day.today .bar{box-shadow:0 0 0 2px #fff, 0 0 10px rgba(255,255,255,.55);}
+  .day-strip-mini .day.today .d, .day-strip-mini .day.today .wd{color:#fff; font-weight:700;}
+  .strip-legend{display:flex;gap:16px;margin-top:10px;font-size:12px;color:#B9C3DA;flex-wrap:wrap;}
+  .strip-legend span{display:inline-flex;align-items:center;gap:6px;}
+  .strip-legend .today-swatch{width:9px;height:9px;border-radius:2px;display:inline-block;background:#57699E;box-shadow:0 0 0 2px #fff;}
+  .dot{width:9px;height:9px;border-radius:2px;display:inline-block;}
+
+  nav.tabs{position:sticky; top:0; z-index:40; background:var(--surface); border-bottom:1px solid var(--line); display:flex; overflow-x:auto; max-width:100%;}
+  nav.tabs .inner{display:flex;max-width:1180px;margin:0 auto;width:100%;}
+  nav.tabs button{appearance:none;border:none;background:none;cursor:pointer; font-family:'Noto Sans TC',sans-serif; font-size:14px; font-weight:500; color:var(--ink-soft); padding:14px 18px; white-space:nowrap; border-bottom:3px solid transparent; transition:color .15s ease, border-color .15s ease;}
+  nav.tabs button:hover{color:var(--ink);}
+  nav.tabs button.active{color:var(--teal-deep); border-bottom-color:var(--teal);}
+  nav.tabs button:focus-visible{outline:2px solid var(--teal); outline-offset:-2px;}
+
+  main{max-width:1180px;margin:0 auto;padding:22px 20px 60px;}
+  .panel{display:none;}
+  .panel.active{display:block; animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px 20px;}
+  .card + .card{margin-top:16px;}
+  .card h2{font-size:16px;margin-bottom:4px;}
+  .card .desc{color:var(--ink-soft);font-size:13px;margin-bottom:14px;}
+
+  .grid-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:16px;}
+  .stat-card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; box-shadow:var(--shadow);}
+  .stat-card .num{font-family:'Roboto Mono',monospace;font-size:28px;font-weight:700;color:var(--teal-deep);}
+  .stat-card .label{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+  .stat-card.warn .num{color:var(--amber);}
+
+  .table-scroll{overflow-x:auto; border-radius:var(--radius); border:1px solid var(--line);}
+  table.sched{border-collapse:collapse; width:100%; font-size:12.5px; min-width:1200px;}
+  table.sched th, table.sched td{border:1px solid var(--line); padding:6px 4px; text-align:center; white-space:nowrap; position:relative;}
+  table.sched thead th{background:#F4F6F9; color:var(--ink-soft); font-weight:500; font-size:11px; position:sticky; top:0; z-index:5;}
+  table.sched thead tr:nth-child(1) th{font-family:'Roboto Mono',monospace;}
+  table.sched td.name-col, table.sched th.name-col{position:sticky; left:0; z-index:6; background:#F4F6F9; text-align:left; font-weight:500; min-width:78px; padding-left:10px;}
+  table.sched td.name-col{background:#fff; z-index:3;}
+  table.sched th.weekend, table.sched td.weekend-col{background:#FBFAF6;}
+
+  table.sched td.cell-off{background:var(--slate-tint); color:#5B6A85;}
+  table.sched td.cell-statutory{background:var(--magenta-tint); color:var(--magenta); font-weight:600;}
+  table.sched td.cell-leave{background:var(--gold-tint); color:#8A6A1F; font-weight:600;}
+  table.sched td.cell-empty{background:#fff;color:#C7CDD9;}
+  table.sched td.u-b2d{background:var(--u-b2d-t); color:var(--u-b2d); font-weight:700;}
+  table.sched td.u-b2n{background:var(--u-b2n-t); color:var(--u-b2n); font-weight:700;}
+  table.sched td.u-hcd{background:var(--u-hcd-t); color:var(--u-hcd); font-weight:700;}
+  table.sched td.u-hcn{background:var(--u-hcn-t); color:var(--u-hcn); font-weight:700;}
+  table.sched td.u-f2{background:var(--u-f2-t); color:var(--u-f2); font-weight:700;}
+  table.sched td.u-som{background:var(--u-som-t); color:var(--u-som); font-weight:700;}
+  table.sched td.u-sop{background:var(--u-sop-t); color:var(--u-sop); font-weight:700;}
+  table.sched td.u-oth{background:var(--u-oth-t); color:var(--u-oth); font-weight:700;}
+  table.sched td.holiday-note{outline:2px solid var(--amber); outline-offset:-2px;}
+  table.sched td.overridden{opacity:.45;}
+  table.sched td.overridden::after{content:"◎"; position:absolute; top:1px; right:2px; font-size:8px; color:var(--coral);}
+
+  .team-toggle{display:flex; gap:8px; margin-bottom:14px;}
+  .team-toggle button{appearance:none; border:1px solid var(--line); background:#fff; border-radius:999px; padding:7px 16px; font-size:13px; cursor:pointer; color:var(--ink-soft); font-weight:500;}
+  .team-toggle button.active{background:var(--ink); color:#fff; border-color:var(--ink);}
+
+  .btn{appearance:none; border:1px solid var(--line); background:#fff; border-radius:8px; padding:8px 14px; font-size:13px; cursor:pointer; color:var(--ink); font-weight:500; display:inline-flex; align-items:center; gap:6px;}
+  .btn:hover{border-color:var(--teal);color:var(--teal-deep);}
+  .btn.primary{background:var(--teal); border-color:var(--teal); color:#fff;}
+  .btn.primary:hover{background:var(--teal-deep);}
+
+  select, input[type=text]{font-family:'Noto Sans TC',sans-serif; font-size:14px; padding:9px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink); min-width:200px;}
+  select:focus, input:focus{outline:2px solid var(--teal); outline-offset:1px;}
+  label.field-label{font-size:12.5px; color:var(--ink-soft); display:block; margin-bottom:6px; font-weight:500;}
+  .toolbar{display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end; margin-bottom:18px;}
+
+  .day-strip{display:flex; flex-wrap:wrap; gap:6px; margin:14px 0;}
+  .day-chip{min-width:72px; border-radius:8px; border:1px solid var(--line); padding:7px 6px; text-align:center; background:#fff;}
+  .day-chip .dd{font-size:10px; color:var(--ink-soft); font-family:'Roboto Mono',monospace;}
+  .day-chip .code{font-size:13px; font-weight:700; margin-top:3px;}
+  .day-chip .unit{font-size:9.5px; margin-top:2px; opacity:.85;}
+  .day-chip.cell-off{background:var(--slate-tint);}
+  .day-chip.cell-statutory{background:var(--magenta-tint);}
+  .day-chip.cell-leave{background:var(--gold-tint);}
+  .day-chip.u-b2d{background:var(--u-b2d-t); color:var(--u-b2d);}
+  .day-chip.u-b2n{background:var(--u-b2n-t); color:var(--u-b2n);}
+  .day-chip.u-hcd{background:var(--u-hcd-t); color:var(--u-hcd);}
+  .day-chip.u-hcn{background:var(--u-hcn-t); color:var(--u-hcn);}
+  .day-chip.u-f2{background:var(--u-f2-t); color:var(--u-f2);}
+  .day-chip.u-som{background:var(--u-som-t); color:var(--u-som);}
+  .day-chip.u-sop{background:var(--u-sop-t); color:var(--u-sop);}
+  .day-chip.u-oth{background:var(--u-oth-t); color:var(--u-oth);}
+  .day-chip.holiday-note{box-shadow:0 0 0 2px var(--amber) inset;}
+
+  .warn-banner{background:var(--amber-tint); border:1px solid #F0C39B; color:#8A4A16; border-radius:8px; padding:10px 14px; font-size:13px; margin:10px 0; display:flex; gap:8px; align-items:flex-start;}
+  .ok-banner{background:var(--teal-tint); border:1px solid #AEDAD8; color:var(--teal-deep); border-radius:8px; padding:10px 14px; font-size:13px; margin:10px 0;}
+  .note-banner{background:#F4F6F9; border:1px solid var(--line); color:var(--ink-soft); border-radius:8px; padding:10px 14px; font-size:12.5px; margin:10px 0;}
+
+  table.mini{border-collapse:collapse; font-size:12.5px; width:100%;}
+  table.mini th, table.mini td{border:1px solid var(--line); padding:7px 9px; text-align:center;}
+  table.mini th{background:#F4F6F9; color:var(--ink-soft); font-weight:500;}
+
+  .tag{display:inline-block; padding:2px 9px; border-radius:999px; font-size:11.5px; font-weight:600;}
+  .tag.on{background:var(--coral-tint); color:var(--coral);}
+  .tag.off{background:var(--slate-tint); color:#5B6A85;}
+  .tag.u-b2d{background:var(--u-b2d-t); color:var(--u-b2d);}
+  .tag.u-b2n{background:var(--u-b2n-t); color:var(--u-b2n);}
+  .tag.u-hcd{background:var(--u-hcd-t); color:var(--u-hcd);}
+  .tag.u-hcn{background:var(--u-hcn-t); color:var(--u-hcn);}
+  .tag.u-f2{background:var(--u-f2-t); color:var(--u-f2);}
+  .tag.u-som{background:var(--u-som-t); color:var(--u-som);}
+  .tag.u-sop{background:var(--u-sop-t); color:var(--u-sop);}
+  .tag.u-oth{background:var(--u-oth-t); color:var(--u-oth);}
+
+  .day-people{display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:8px; margin-top:6px;}
+  .person-pill{border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:13px; display:flex; justify-content:space-between; align-items:center; background:#fff; gap:6px;}
+  .person-pill b{font-weight:600;}
+  .section-title{font-size:13px; font-weight:700; color:var(--ink-soft); margin:18px 0 8px; text-transform:uppercase; letter-spacing:.04em;}
+  .unit-group-title{font-size:13px; font-weight:700; margin:14px 0 6px; padding:4px 10px; border-radius:6px; display:inline-block;}
+
+  .legend-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:10px; margin-top:10px;}
+  .legend-item{display:flex; gap:10px; align-items:center; padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:#fff;}
+  .legend-swatch{width:20px; height:20px; border-radius:5px; flex:none;}
+
+  footer{max-width:1180px; margin:0 auto; padding:0 20px 40px; color:var(--ink-soft); font-size:12px;}
+
+  @media print{
+    header.app-header, nav.tabs, .toolbar, .btn, footer, .no-print{display:none !important;}
+    body{background:#fff;}
+    main{padding:0; max-width:100%;}
+    .panel{display:none !important;}
+    .panel.print-target{display:block !important;}
+    .card{box-shadow:none; border:1px solid #999;}
+    table.sched{min-width:0; font-size:10px;}
+    table.sched td, table.sched th{padding:3px 2px;}
+  }
+  @media (max-width:640px){
+    .toolbar{flex-direction:column; align-items:stretch;}
+    select, input[type=text]{width:100%;}
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-inner">
+    <div class="eyebrow">MRI 科 · 技術人員月排班</div>
+    <h1>月排班管理儀表板</h1>
+    <div class="subtitle" id="headerSubtitle">載入中…</div>
+    <div class="data-source-row" id="dataSourceRow"></div>
+    <div class="data-source-row" id="periodSelectorRow"></div>
+    <div class="period-row" id="periodRow"></div>
+    <div class="day-strip-mini" id="headerStrip" aria-label="本月日期總覽"></div>
+    <div class="strip-legend">
+      <span><i class="dot" style="background:#57699E"></i>平日</span>
+      <span><i class="dot" style="background:#1C93A0"></i>六、日</span>
+      <span><i class="dot" style="background:#D1495B"></i>國定假日</span>
+      <span><i class="today-swatch"></i>今天</span>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="inner">
+    <button class="tab-btn active" data-tab="overview">總覽</button>
+    <button class="tab-btn" data-tab="schedule">完整班表</button>
+    <button class="tab-btn" data-tab="staff">員工查詢</button>
+    <button class="tab-btn" data-tab="date">日期查詢</button>
+    <button class="tab-btn" data-tab="rotation">假日／健檢輪值</button>
+    <button class="tab-btn" data-tab="legend">站別判讀規則</button>
+  </div>
+</nav>
+
+<main>
+
+  <section class="panel active" id="panel-overview">
+    <div class="grid-cards" id="overviewCards"></div>
+
+    <div class="card">
+      <h2>本月各站別班次分布</h2>
+      <div class="desc">依「站別判讀規則」自動歸類（平日依代碼／顏色判讀，六、日依假日規則歸入 B2 MRI 或健檢MRI），重複人員已依規則去重。</div>
+      <div class="grid-cards" id="unitBreakdown" style="margin-bottom:0;"></div>
+    </div>
+
+    <div class="card">
+      <h2>本月備註</h2>
+      <div class="desc" id="monthNoteDesc">標示「國」者為休假；假日站別歸類規則僅套用於週六、日。</div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-schedule">
+    <div class="card">
+      <div class="toolbar">
+        <div>
+          <label class="field-label">選擇班別群組</label>
+          <div class="team-toggle" id="teamToggle">
+            <button data-team="A" class="active">主排班（17人／上半部）</button>
+            <button data-team="B">支援排班（10人／下半部）</button>
+          </div>
+        </div>
+        <button class="btn primary no-print" id="printBtn" style="margin-left:auto;">🖨 列印本頁班表</button>
+      </div>
+      <div class="table-scroll">
+        <table class="sched" id="schedTable"></table>
+      </div>
+      <div class="note-banner" style="margin-top:10px;">
+        淡化＋「◎」標記的儲存格，代表該員當日於上下半部皆有排班，依規則已由另一半部班別取代（平日以下半部為主／六日假日以上半部為主），滑鼠移至儲存格可查看實際歸屬。顏色說明請見「站別判讀規則」分頁。
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-staff">
+    <div class="card">
+      <div class="toolbar">
+        <div>
+          <label class="field-label" for="staffSelect">選擇姓名</label>
+          <select id="staffSelect"></select>
+        </div>
+      </div>
+      <div id="staffResult"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-date">
+    <div class="card">
+      <div class="toolbar">
+        <div>
+          <label class="field-label" for="dateSelect">選擇日期</label>
+          <select id="dateSelect"></select>
+        </div>
+      </div>
+      <div id="dateResult"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-rotation">
+    <div class="card">
+      <h2>假日班輪值（每週六、日 5 人小組）</h2>
+      <div class="desc">資料來源：「假日班」工作表，僅列出本排班週期內之場次。</div>
+      <div class="table-scroll" style="margin-top:10px;"><table class="mini" id="holidayDutyTable"></table></div>
+    </div>
+    <div class="card">
+      <h2>健檢假日輪值（每週六、日 2 人小組）</h2>
+      <div class="desc">資料來源：「健檢假日」工作表，僅列出本排班週期內之場次。</div>
+      <div class="table-scroll" style="margin-top:10px;"><table class="mini" id="checkupDutyTable"></table></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-legend">
+    <div class="card">
+      <h2>平日判讀規則</h2>
+      <div class="desc">依代碼判讀，未列出之代碼歸為「其他」。</div>
+      <table class="mini">
+        <thead><tr><th>區塊</th><th>代碼</th><th>歸屬站別</th></tr></thead>
+        <tbody>
+          <tr><td rowspan="4">上半部（主排班）</td><td class="mono">%2</td><td><span class="tag u-b2d">B2 MRI 白班</span></td></tr>
+          <tr><td class="mono">P%2</td><td><span class="tag u-hcd">健檢MRI 白班</span></td></tr>
+          <tr><td class="mono">XB</td><td><span class="tag u-b2n">B2 MRI 小夜</span></td></tr>
+          <tr><td class="mono">PXB</td><td><span class="tag u-hcn">健檢MRI 小夜</span></td></tr>
+          <tr><td rowspan="4">下半部（支援排班）</td><td class="mono">%2（綠字）</td><td><span class="tag u-hcd">健檢MRI 白班</span></td></tr>
+          <tr><td class="mono">%2（黑字）</td><td><span class="tag u-sop">健檢sono 上</span></td></tr>
+          <tr><td class="mono">XB</td><td><span class="tag u-hcn">健檢MRI 小夜</span></td></tr>
+          <tr><td class="mono">H2</td><td><span class="tag u-f2">二醫療MRI</span></td></tr>
+          <tr><td>下半部（支援排班）</td><td class="mono">A4</td><td><span class="tag u-som">健檢sono 下</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>假日（六、日）判讀規則</h2>
+      <div class="desc">六、日不細分白班／小夜，依所屬半部與例外條件歸類：</div>
+      <table class="mini">
+        <thead><tr><th>區塊</th><th>條件</th><th>歸屬站別</th></tr></thead>
+        <tbody>
+          <tr><td>上半部（主排班）</td><td>任一非休假代碼（含 HO、HP）</td><td><span class="tag u-b2d">B2 MRI</span></td></tr>
+          <tr><td>下半部（支援排班）</td><td>代碼含「(門)」註解，或代碼為 HO／HP</td><td><span class="tag u-b2d">B2 MRI</span></td></tr>
+          <tr><td>下半部（支援排班）</td><td>其餘上班代碼</td><td><span class="tag u-hcd">健檢MRI</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note-banner">HO、HP 代碼本月僅出現於六、日：假日時皆視為 B2 MRI 實際值勤（不算休假）。</div>
+    </div>
+
+    <div class="card">
+      <h2>重複人員（同卡號橫跨上下半部）處理原則</h2>
+      <table class="mini">
+        <thead><tr><th>情境</th><th>優先班別</th></tr></thead>
+        <tbody>
+          <tr><td>平日（週一～週五）</td><td>以<b>下半部</b>班別為主</td></tr>
+          <tr><td>假日（週六、日）</td><td>以<b>上半部</b>班別為主</td></tr>
+        </tbody>
+      </table>
+      <div class="desc" style="margin-top:10px;">本月受影響人員（卡號重複）：<span id="overlapNames"></span></div>
+    </div>
+
+    <div class="card">
+      <h2>休假人員定義</h2>
+      <div class="desc">不論平日或假日，下列情形視為休假人員：</div>
+      <table class="mini">
+        <thead><tr><th>代碼</th><th>條件</th><th>判定</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">休</td><td>（完整代碼僅為「休」）</td><td>休假</td></tr>
+          <tr><td class="mono">例</td><td>—</td><td>休假（例假）</td></tr>
+          <tr><td class="mono">國</td><td>國定假日</td><td>休假</td></tr>
+          <tr><td class="mono">H2(休)／H2(公)</td><td>紅色字體</td><td>休假</td></tr>
+          <tr><td class="mono">H2(休)／H2(公)</td><td>黑色字體</td><td>上班（依規則歸屬二醫療MRI／假日規則）</td></tr>
+          <tr><td class="mono">休(括號內容)</td><td>如「休(%2)」</td><td><b>上班</b>，以括號內容（如 %2）作為實際班別依據</td></tr>
+        </tbody>
+      </table>
+      <div class="note-banner">「休(...)」開頭但括號內有實際班別代碼者，代表當日仍在上班，「休」字本身不影響歸類，僅括號內容才是判斷依據。</div>
+    </div>
+
+    <div class="card">
+      <h2>本月出現之班別代碼（原始文字）</h2>
+      <div class="table-scroll" style="margin-top:10px;"><table class="mini" id="codeTable"></table></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  資料來源：2026_0608-_0705_MRI_月排班表.xlsx（班表／值班／假日班／健檢假日／攝影室 工作表）。站別判讀規則依使用者提供之業務邏輯設定，如與實際規定不符請自行調整。本頁為離線檢視工具，所有運算僅在您的瀏覽器內完成，不會上傳任何資料。
+</footer>
+
+<script>
+const EMBEDDED_DATA = {"days":[{"date":"2026-06-08","wd":"一"},{"date":"2026-06-09","wd":"二"},{"date":"2026-06-10","wd":"三"},{"date":"2026-06-11","wd":"四"},{"date":"2026-06-12","wd":"五"},{"date":"2026-06-13","wd":"六"},{"date":"2026-06-14","wd":"日"},{"date":"2026-06-15","wd":"一"},{"date":"2026-06-16","wd":"二"},{"date":"2026-06-17","wd":"三"},{"date":"2026-06-18","wd":"四"},{"date":"2026-06-19","wd":"五"},{"date":"2026-06-20","wd":"六"},{"date":"2026-06-21","wd":"日"},{"date":"2026-06-22","wd":"一"},{"date":"2026-06-23","wd":"二"},{"date":"2026-06-24","wd":"三"},{"date":"2026-06-25","wd":"四"},{"date":"2026-06-26","wd":"五"},{"date":"2026-06-27","wd":"六"},{"date":"2026-06-28","wd":"日"},{"date":"2026-06-29","wd":"一"},{"date":"2026-06-30","wd":"二"},{"date":"2026-07-01","wd":"三"},{"date":"2026-07-02","wd":"四"},{"date":"2026-07-03","wd":"五"},{"date":"2026-07-04","wd":"六"},{"date":"2026-07-05","wd":"日"}],"teamA":[{"name":"蔡運冠","card":"2360.0","shifts":["%2","%2","XB","%2","休","休","A4","XB","XB(接)","休","%2","國","休","休","XB","XB","休","%2","%2","HO","休","%2","%2","XB","XB","%2","HO","休"],"colors":["default","black","default","black","black","black","black","default","black","black","black","black","black","black","black","default","black","black","black","black","black","default","default","default","black","black","black","black"]},{"name":"吳奕螢","card":"B046","shifts":["H2(公)","H2(公)","H2(公)","H2(公)","H2(公)","休","休","H2(公)","H2(公)","H2(公)","H2(公)","國","休","休","H2(公)","H2(公)","H2(公)","H2(公)","H2(公)","休","休","H2(公)","H2(公)","H2(公)","H2(公)","H2(公)","休","休"],"colors":["default","default","default","default","default","black","black","default","default","default","default","default","black","black","default","default","default","default","default","black","black","default","default","default","default","default","black","black"]},{"name":"廖英翔","card":"6815.0","shifts":["XB(接)","休","%2","休(%2)","%2","A4","休","XB","XB","休","%2","國","休","HO","XB","XB(接)","%2","%2","%2","休","休","%2","%2","%2","%2","%2","A4","休"],"colors":["default","default","black","black","default","black","black","black","black","default","black","black","black","black","black","black","black","black","black","black","black","default","default","black","black","black","black","black"]},{"name":"張詠傑","card":"B528","shifts":["XB","H2(公)","休","%2","%2","休","A4","XB(接)","H2(公)","休(%2)","XB","國","休","休","休","H2(公)","XB","%2","%2","A4","休","XB","XB(接)","%2","%2","%2","A4","休"],"colors":["default","red","black","default","black","black","black","black","red","default","default","black","black","black","black","red","black","black","default","black","black","default","black","default","default","default","black","black"]},{"name":"李宗原","card":"C103","shifts":["%2","%2","XB(接)","XB","XB","休","休","休","休","%2","%2","國","HO","休","%2","%2","%2","XB","XB","休","A4","H2(休)","H2(休)","H2(休)","H2(休)","H2(休)","休","休"],"colors":["black","black","black","black","black","black","black","default","default","black","black","black","black","black","black","black","black","default","black","black","black","black","black","default","default","black","black","black"]},{"name":"張倪蓉","card":"C214","shifts":["%2","%2","%2","%2","%2","休","休","休","休","%2","%2","國","休","HP","%2","%2","%2","%2","%2","HP","休","H2(休)","H2(休)","H2(休)","H2(休)","H2(休)","休","休"],"colors":["black","black","black","default","black","black","black","default","default","black","black","black","black","black","black","black","black","black","black","black","black","black","black","black","black","black","black","black"]},{"name":"黃乙哲","card":"D551","shifts":["P%2","P%2","H2","休","H2","休","例","P%2","P%2","P%2","P%2","國","A4","例","P%2","P%2","PXB","PXB","PXB","例","HO","P%2","休","H2","P%2","P%2","休","例"],"colors":["black","default","default","black","default","black","black","default","default","default","black","black","black","black","black","black","black","default","black","black","black","black","black","default","default","default","black","black"]},{"name":"周哲勳","card":"B432","shifts":["%2","XB","休","XB","XB(接)","例","HO","休(%2)","%2","%2","XB(接)","國","A4","例","XB","H2(休)","H2(休)","H2(休)","休","休","例","%2","%2","%2","XB","XB","例","A4"],"colors":["black","black","black","black","black","black","black","black","black","black","black","black","black","black","black","black","black","black","black","black","black","default","default","black","default","default","black","black"]},{"name":"江啟維","card":"E917","shifts":["休","XB","XB","XB(接)","XB","休","例","XB","XB","XB","XB","國","A4","例","XB","休","XB","XB","XB","例","A4","XB(接)","XB","XB","XB","XB","休","例"],"colors":["default","default","default","default","default","black","black","default","black","black","black","default","black","black","black","default","default","default","default","black","black","default","black","default","default","default","black","black"]},{"name":"葉士詠","card":"F463","shifts":["休","休","%2","P%2","P%2","例","A4","%2","%2","P%2","XB","國","休","例","H2","%2","P%2","休","P%2","A4","例","H2","H2","%2","%2","P%2","例","A4"],"colors":["default","default","default","black","black","black","black","default","default","black","black","black","black","black","black","default","black","black","black","black","black","black","black","default","default","black","black","black"]},{"name":"李典峰","card":"F579","shifts":["%2","%2","%2","休","%2","A4","例","%2","%2","%2","%2","國","例","休","XB(接)","XB","XB","休","%2","A4","例","XB","XB","XB(接)","休","%2","A4","例"],"colors":["default","default","default","default","default","black","black","black","default","black","black","black","black","black","black","black","default","default","black","black","black","black","black","default","black","default","black","black"]},{"name":"黃炯瑋","card":"A785","shifts":["休","%2","%2","%2","XB","休","例","休","%2","XB(接)","XB","國","A4","例","%2","%2","%2","%2","XB","例","A4","%2","%2","XB","XB(接)","XB","休","例"],"colors":["default","default","default","black","default","black","black","black","black","black","default","black","black","black","default","default","default","default","default","black","black","black","default","default","black","black","black","black"]},{"name":"黃柏瑄","card":"G210","shifts":["XB","XB","XB","XB","休","A4","例","%2","%2","XB","休","國","例","A4","%2","%2","%2","XB","XB(接)","休","例","XB","XB","休","%2","XB(接)","例","A4"],"colors":["black","black","black","black","black","black","black","black","default","default","default","black","black","black","black","default","default","black","black","black","black","black","black","black","black","black","black","black"]},{"name":"陳品涵","card":"G582","shifts":["P%2","H2","P%2","P%2","P%2","休","例","P%2","P%2","H2","H2","國","例","A4","P%2","P%2","P%2","P%2","P%2","休","例","休","休","PXB","PXB","PXB","例","A4"],"colors":["default","default","default","default","default","black","black","default","default","default","default","default","black","black","black","default","black","default","black","black","black","default","black","default","default","default","black","black"]},{"name":"李政穎","card":"G580","shifts":["XB","XB","XB","XB","XB","例","A4","XB","XB","XB","休","國","休","例","休","XB","XB","XB(接)","休","例","A4","XB","XB","XB","XB","XB","例","HO"],"colors":["black","default","black","black","default","black","black","default","default","black","default","default","black","black","default","default","default","default","default","black","black","default","default","default","default","black","black","black"]},{"name":"陳顯達","card":"H312","shifts":["XB","XB(接)","休","休","%2","HO","例","%2","XB","XB","休","國","例","A4","%2","XB","XB(接)","XB","XB","休","例","%2","%2","%2","%2","%2","A4","例"],"colors":["black","black","red","red","black","black","black","black","black","black","default","default","black","black","black","black","black","black","black","black","black","black","black","black","black","black","black","black"]},{"name":"葉于菁","card":"I117","shifts":["H2","H2","H2","H2","H2","休","例","H2","H2","H2","H2","國","休","例","H2","H2","H2","H2","H2","休","例","H2","H2","H2","H2","H2","休","例"],"colors":["black","default","black","black","default","black","black","black","black","black","black","default","black","black","black","black","black","black","black","black","black","black","black","black","default","default","black","black"]}],"teamB":[{"name":"何揮鳳","card":"C427","shifts":["A4","A4","XB","XB","XB","A4","休","XB","XB","%2","%2","國","休","休","休","%2","%2","H2","H2","A4","A4","XB","XB","休","休","%2","休","休"],"colors":["purple","purple","default","default","default","black","black","default","default","black","black","red","black","black","black","black","black","default","default","black","black","default","default","black","black","black","black","black"]},{"name":"何佳穎","card":"D004","shifts":["%2","%2","%2","%2","XB","休","A4","%2","%2","休","%2","國","休","休","%2","H2","H2","%2","XB","休","休","%2","%2","%2","%2","休","休","A4"],"colors":["black","black","black","black","default","black","black","black","black","black","green","red","black","black","black","default","default","black","black","black","black","black","black","green","black","black","black","black"]},{"name":"劉羿君","card":"E877","shifts":["XB","XB","休","休","%2","例","例","A4","A4","A4","A4","國","A4","A4","A4","A4","A4","%2","%2","休","例","休","A4","A4","H2","H2","A4","例"],"colors":["default","black","black","black","black","black","black","purple","purple","purple","purple","red","black","black","purple","purple","purple","green","black","black","black","black","purple","purple","default","default","black","black"]},{"name":"王健名","card":"H308","shifts":["H2","%2","%2","H2","H2(公)","A4(門)","例","休","H2(休)","休","休","國","休","例","H2(休)","H2(休)","H2(休)","H2(休)","H2(休)","例","A4","%2","%2","%2","%2","例","A4","A4"],"colors":["default","green","green","default","red","black","black","black","red","black","black","red","black","black","red","red","red","red","red","black","black","green","green","green","green","black","black","black"]},{"name":"莊翔茜","card":"H310","shifts":["XB","休","A4","A4","A4","休","例","H2","H2","H2","H2","國","A4","例","XB","XB","休","A4","A4","A4","例","A4","%2","%2","A4","A4","休","例"],"colors":["default","black","purple","purple","purple","black","black","default","default","default","default","red","black","black","default","default","black","purple","purple","black","black","purple","green","black","purple","purple","black","black"]},{"name":"賴宥錚","card":"G577","shifts":["例","XB","XB","XB","休","A4","A4","XB","XB","XB","XB","國","例","A4","XB","XB","XB","XB","休","休","例","XB","XB","XB","XB","XB","休","例"],"colors":["black","black","default","default","black","black","black","default","default","default","default","red","black","black","default","default","default","default","black","black","black","black","default","default","default","default","black","black"]},{"name":"陳品涵","card":"G582","shifts":["%2","H2","%2","%2","%2","休","例","%2","%2","XB","XB","國","例","A4(門)","%2","%2","%2","%2","%2","休","例","休","休","XB","XB","XB","例","A4(門)"],"colors":["green","default","green","green","green","black","black","green","green","default","default","red","black","black","green","green","green","green","green","black","black","black","black","default","default","default","black","black"]},{"name":"張倪蓉","card":"C214","shifts":[null,null,null,null,null,null,null,null,null,null,null,"國",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"colors":["green","red","red","red","red","black","black","green","green","green","black","red","black","black","green","green","black","black","default","black","black","green","green","green","green","green","black","black"]},{"name":"黃乙哲","card":"D551","shifts":["%2","%2","H2","休","H2","休","例","%2","%2","%2","%2","國","A4(門)","例","%2","%2","XB","XB","XB","例","HO(門)","%2","休","H2","%2","%2","休","例"],"colors":["green","green","default","black","default","black","black","green","green","green","green","red","black","black","green","green","default","default","default","black","black","green","black","default","green","green","black","black"]},{"name":"葉士詠","card":"F463","shifts":[null,null,null,"%2","%2",null,null,null,null,"%2",null,"國",null,null,"H2",null,"%2",null,"%2",null,null,"H2","H2",null,null,"%2",null,null],"colors":["black","red","red","green","green","black","black","black","black","green","green","red","black","black","default","black","green","black","green","red","black","default","default","black","green","green","black","black"]}],"statsA":[{"name":"蔡運冠","例假":0,"休假":8,"一二周":0,"三四周":0,"休":8,"例":0,"休(%2)":0,"外":0,"H2(休)":0,"假日":9,"H2(補)":0,"補休":8},{"name":"吳奕螢","例假":0,"休假":8,"一二周":0,"三四周":0,"休":8,"例":0,"休(%2)":0,"外":0,"H2(休)":0,"假日":28,"H2(補)":0,"補休":8},{"name":"廖英翔","例假":0,"休假":8,"一二周":0,"三四周":0,"休":7,"例":0,"休(%2)":1,"外":0,"H2(休)":0,"假日":8,"H2(補)":0,"補休":7},{"name":"張詠傑","例假":0,"休假":8,"一二周":0,"三四周":0,"休":7,"例":0,"休(%2)":1,"外":0,"H2(休)":0,"假日":11,"H2(補)":0,"補休":7},{"name":"李宗原","例假":0,"休假":8,"一二周":0,"三四周":0,"休":8,"例":0,"休(%2)":0,"外":0,"H2(休)":5,"假日":14,"H2(補)":0,"補休":8},{"name":"張倪蓉","例假":0,"休假":8,"一二周":0,"三四周":0,"休":8,"例":0,"休(%2)":0,"外":0,"H2(休)":5,"假日":14,"H2(補)":0,"補休":8},{"name":"黃乙哲","例假":4,"休假":4,"一二周":2,"三四周":2,"休":4,"例":4,"休(%2)":0,"外":0,"H2(休)":0,"假日":9,"H2(補)":0,"補休":8},{"name":"周哲勳","例假":4,"休假":4,"一二周":2,"三四周":2,"休":3,"例":4,"休(%2)":1,"外":0,"H2(休)":3,"假日":11,"H2(補)":0,"補休":7},{"name":"江啟維","例假":4,"休假":4,"一二周":2,"三四周":2,"休":4,"例":4,"休(%2)":0,"外":0,"H2(休)":0,"假日":9,"H2(補)":0,"補休":8},{"name":"葉士詠","例假":4,"休假":4,"一二周":2,"三四周":2,"休":4,"例":4,"休(%2)":0,"外":0,"H2(休)":0,"假日":9,"H2(補)":0,"補休":8},{"name":"李典峰","例假":4,"休假":4,"一二周":2,"三四周":2,"休":4,"例":4,"休(%2)":0,"外":0,"H2(休)":0,"假日":9,"H2(補)":0,"補休":8},{"name":"黃炯瑋","例假":4,"休假":4,"一二周":2,"三四周":2,"休":4,"例":4,"休(%2)":0,"外":0,"H2(休)":0,"假日":9,"H2(補)":0,"補休":8},{"name":"黃柏瑄","例假":4,"休假":4,"一二周":2,"三四周":2,"休":4,"例":4,"休(%2)":0,"外":0,"H2(休)":0,"假日":9,"H2(補)":0,"補休":8},{"name":"陳品涵","例假":4,"休假":4,"一二周":2,"三四周":2,"休":4,"例":4,"休(%2)":0,"外":0,"H2(休)":0,"假日":9,"H2(補)":0,"補休":8},{"name":"李政穎","例假":4,"休假":4,"一二周":2,"三四周":2,"休":4,"例":4,"休(%2)":0,"外":0,"H2(休)":0,"假日":9,"H2(補)":0,"補休":8},{"name":"陳顯達","例假":4,"休假":4,"一二周":2,"三四周":2,"休":4,"例":4,"休(%2)":0,"外":0,"H2(休)":0,"假日":9,"H2(補)":0,"補休":8},{"name":"葉于菁","例假":4,"休假":4,"一二周":2,"三四周":2,"休":4,"例":4,"休(%2)":0,"外":0,"H2(休)":0,"假日":9,"H2(補)":0,"補休":8}],"statsB":[{"name":"何揮鳳","例假":0,"休假":8,"一二周":0,"三四周":0,"休":8,"例":0,"休(%2)":0,"外":0,"H2(休)":0,"假日":0,"H2(補)":0,"補休":0},{"name":"何佳穎","例假":0,"休假":8,"一二周":0,"三四周":0,"休":8,"例":0,"休(%2)":0,"外":0,"H2(休)":0,"假日":0,"H2(補)":0,"補休":0},{"name":"劉羿君","例假":4,"休假":4,"一二周":2,"三四周":2,"休":4,"例":4,"休(%2)":0,"外":0,"H2(休)":0,"假日":0,"H2(補)":0,"補休":0},{"name":"王健名","例假":4,"休假":4,"一二周":2,"三四周":2,"休":4,"例":4,"休(%2)":0,"外":0,"H2(休)":0,"假日":0,"H2(補)":0,"補休":0},{"name":"莊翔茜","例假":4,"休假":4,"一二周":2,"三四周":2,"休":4,"例":4,"休(%2)":0,"外":0,"H2(休)":0,"假日":0,"H2(補)":0,"補休":0},{"name":"賴宥錚","例假":4,"休假":4,"一二周":2,"三四周":2,"休":4,"例":4,"休(%2)":0,"外":0,"H2(休)":0,"假日":0,"H2(補)":0,"補休":0},{"name":"陳品涵","例假":4,"休假":4,"一二周":2,"三四周":2,"休":4,"例":4,"休(%2)":0,"外":0,"H2(休)":0,"假日":0,"H2(補)":0,"補休":0},{"name":"張倪蓉","例假":0,"休假":0,"一二周":0,"三四周":0,"休":0,"例":0,"休(%2)":0,"外":0,"H2(休)":0,"假日":0,"H2(補)":0,"補休":0}],"oncall":[{"name":"蔡運冠","dates":["2026-06-25"]},{"name":"廖英翔","dates":["2026-06-26"]},{"name":"張詠傑","dates":["2026-06-29"]},{"name":"黃乙哲","dates":["2026-06-30"]},{"name":"周哲勳","dates":["2026-06-13","2026-06-14","2026-07-01"]},{"name":"江啟維","dates":["2026-06-27","2026-06-28","2026-07-02"]},{"name":"葉士詠","dates":["2026-06-08","2026-07-03","2026-07-04","2026-07-05"]},{"name":"李典峰","dates":["2026-06-09"]},{"name":"黃炯瑋","dates":["2026-06-10"]},{"name":"黃柏瑄","dates":["2026-06-11"]},{"name":"陳品涵","dates":["2026-06-12","2026-06-19"]},{"name":"李政穎","dates":["2026-06-15"]},{"name":"陳顯達","dates":["2026-06-16"]},{"name":"何揮鳳","dates":["2026-06-17"]},{"name":"何佳穎","dates":["2026-06-18"]},{"name":"劉羿君","dates":["2026-06-20","2026-06-21","2026-06-22"]},{"name":"莊翔茜","dates":["2026-06-23"]},{"name":"賴宥錚","dates":["2026-06-24"]}],"holidayDuty":[{"date":"2026-06-13","wd":"六","members":["陳顯達","李典峰","黃柏瑄","陳品涵","廖英翔"]},{"date":"2026-06-14","wd":"日","members":["周哲勳","葉士詠","張詠傑","李政穎","蔡運冠"]},{"date":"2026-06-20","wd":"六","members":["黃炯瑋","李宗原","江啟維","黃乙哲","張倪蓉"]},{"date":"2026-06-21","wd":"日","members":["陳顯達","李典峰","黃柏瑄","陳品涵","廖英翔"]},{"date":"2026-06-27","wd":"六","members":["周哲勳","葉士詠","張詠傑","李政穎","蔡運冠"]},{"date":"2026-06-28","wd":"日","members":["黃炯瑋","李宗原","江啟維","黃乙哲","張倪蓉"]},{"date":"2026-07-04","wd":"六","members":["陳顯達","李典峰","黃柏瑄","陳品涵","廖英翔"]},{"date":"2026-07-05","wd":"日","members":["周哲勳","葉士詠","張詠傑","李政穎","蔡運冠"]}],"checkupDuty":[{"date":"2026-06-13","wd":"六","members":["何揮鳳","劉羿君"]},{"date":"2026-06-14","wd":"日","members":["何佳穎","賴宥錚"]},{"date":"2026-06-20","wd":"六","members":["王健名","莊翔茜"]},{"date":"2026-06-21","wd":"日","members":["何揮鳳","劉羿君"]},{"date":"2026-06-27","wd":"六","members":["何佳穎","賴宥錚"]},{"date":"2026-06-28","wd":"日","members":["王健名","莊翔茜"]},{"date":"2026-07-04","wd":"六","members":["何揮鳳","劉羿君"]},{"date":"2026-07-05","wd":"日","members":["何佳穎","賴宥錚"]}],"holidayNotes":[{"dayIndex":11,"date":"2026-06-19","note":"端午"}]};
+let DATA = null; // set once live/fallback data is resolved, then initApp() runs
+let hasBootedOnce = false; // guards one-time-only behaviors (jump-to-today) across re-renders
+
+/* ---------- basic helpers ---------- */
+function byId(id){ return document.getElementById(id); }
+function fmtDate(iso){ const [y,m,d]=iso.split('-'); return `${parseInt(m)}/${parseInt(d)}`; }
+function isWeekendWd(wd){ return wd==='六' || wd==='日'; }
+function isWeekendDay(i){ return isWeekendWd(DATA.days[i].wd); }
+function baseCode(code){ return code.replace(/\(.*\)$/, ''); }
+
+function initApp(){
+const dayIndexByDate = {};
+DATA.days.forEach((d,i)=>{ dayIndexByDate[d.date]=i; });
+const holidayNoteMap = {};
+(DATA.holidayNotes||[]).forEach(n=>{ holidayNoteMap[n.dayIndex] = n.note; });
+function isHolidayNoteDay(i){ return Object.prototype.hasOwnProperty.call(holidayNoteMap, i); }
+function holidayNoteText(i){ return holidayNoteMap[i] || ''; }
+const TODAY_STR = (()=>{ const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; })();
+
+(function renderHeaderSubtitle(){
+  const first = DATA.days[0], last = DATA.days[DATA.days.length-1];
+  const teamACount = DATA.teamA.length, teamBCount = DATA.teamB.length;
+  byId('headerSubtitle').textContent =
+    `排班週期　${first.date}（${first.wd}）－${last.date}（${last.wd}）　共 ${DATA.days.length} 天　·　主排班 ${teamACount} 人／支援排班 ${teamBCount} 人`;
+})();
+
+/* ---------- unit label -> css/family mapping ---------- */
+const UNIT_META = {
+  'B2 MRI 白班': {cls:'u-b2d'},
+  'B2 MRI 小夜': {cls:'u-b2n'},
+  'B2 MRI':      {cls:'u-b2d'},
+  '健檢MRI 白班': {cls:'u-hcd'},
+  '健檢MRI 小夜': {cls:'u-hcn'},
+  '健檢MRI':      {cls:'u-hcd'},
+  '二醫療MRI':    {cls:'u-f2'},
+  '健檢sono 上':  {cls:'u-som'},
+  '健檢sono 下':  {cls:'u-sop'},
+  '其他':         {cls:'u-oth'},
+};
+const UNIT_ORDER = ['B2 MRI 白班','B2 MRI 小夜','B2 MRI','健檢MRI 白班','健檢MRI 小夜','健檢MRI','二醫療MRI','健檢sono 上','健檢sono 下','其他'];
+
+/* ---------- core classification ---------- */
+// team: 'A' (上半部/主排班) or 'B' (下半部/支援排班)
+// colorTag: cell font color tag ('green'|'black'|'red'|'purple'|'default'), used for %2 (lower half) and H2(休)/H2(公) disambiguation
+
+function classify(code, team, colorTag, dayIdx){
+  if(!code) return {cat:'empty', unit:null};
+  const holiday = isWeekendDay(dayIdx);
+
+  // Holiday exception: HO / HP are actual B2 MRI duty on holidays (not off/leave).
+  const hoHpBase = baseCode(code);
+  if(holiday && (hoHpBase === 'HO' || hoHpBase === 'HP')) return {cat:'duty', unit:'B2 MRI'};
+
+  // "休(...)" variants are actually WORK — use the parenthetical content as the real code.
+  const restVariant = code.match(/^休\((.+)\)$/);
+  if(restVariant) return classify(restVariant[1], team, colorTag, dayIdx);
+
+  // Exact off/rest codes (regardless of weekday or holiday).
+  if(code === '休') return {cat:'off', unit:null};
+  if(code === '例') return {cat:'statutory', unit:null};
+  if(code === '國') return {cat:'statutory', unit:null};
+
+  // H2(休) / H2(公): red font = off, otherwise = actual H2 duty.
+  if(code === 'H2(休)' || code === 'H2(公)'){
+    if(colorTag === 'red') return {cat:'off', unit:null};
+    if(holiday){
+      if(team === 'A') return {cat:'duty', unit:'B2 MRI'};
+      return {cat:'duty', unit:'健檢MRI'};
+    }
+    if(team === 'A') return {cat:'other', unit:'其他'};
+    return {cat:'duty', unit:'二醫療MRI'};
+  }
+
+  const base = baseCode(code);
+  if(holiday){
+    if(team === 'A') return {cat:'duty', unit:'B2 MRI'};
+    // Lower half on holiday: "(門)" annotation means covering B2 MRI, otherwise 健檢MRI.
+    if(code.indexOf('(門)') !== -1) return {cat:'duty', unit:'B2 MRI'};
+    return {cat:'duty', unit:'健檢MRI'};
+  }
+  if(team === 'A'){
+    const map = {'%2':'B2 MRI 白班','P%2':'健檢MRI 白班','XB':'B2 MRI 小夜','PXB':'健檢MRI 小夜'};
+    if(map[base]) return {cat:'duty', unit:map[base]};
+    return {cat:'other', unit:'其他'};
+  }
+  // team B
+  if(base === '%2'){
+    if(colorTag === 'green') return {cat:'duty', unit:'健檢MRI 白班'};
+    return {cat:'duty', unit:'健檢sono 上'};
+  }
+  if(base === 'XB') return {cat:'duty', unit:'健檢MRI 小夜'};
+  if(base === 'H2') return {cat:'duty', unit:'二醫療MRI'};
+  if(base === 'A4') return {cat:'duty', unit:'健檢sono 下'};
+  return {cat:'other', unit:'其他'};
+}
+function isWorkingCat(cat){ return cat==='duty' || cat==='other'; }
+function cssClassFor(result){
+  if(result.cat==='empty') return 'cell-empty';
+  if(result.cat==='off') return 'cell-off';
+  if(result.cat==='statutory') return 'cell-statutory';
+  if(result.cat==='leave') return 'cell-leave';
+  return UNIT_META[result.unit] ? UNIT_META[result.unit].cls : 'u-oth';
+}
+
+/* ---------- overlap / effective merged roster ---------- */
+const cardMapA = {}; DATA.teamA.forEach(p=>cardMapA[p.card]=p);
+const cardMapB = {}; DATA.teamB.forEach(p=>cardMapB[p.card]=p);
+const overlapCards = Object.keys(cardMapA).filter(c=>cardMapB[c]);
+
+function buildEffectiveRoster(){
+  const allCards = Array.from(new Set([...Object.keys(cardMapA), ...Object.keys(cardMapB)]));
+  const n = DATA.days.length;
+  return allCards.map(card=>{
+    const A = cardMapA[card], B = cardMapB[card];
+    const name = (B && B.name) || (A && A.name);
+    const shifts=[], srcTeam=[], colorTags=[];
+    for(let i=0;i<n;i++){
+      const holiday = isWeekendDay(i);
+      let src, code, colorTag=null;
+      if(A && B){
+        if(holiday){
+          if(A.shifts[i]){ src='A'; code=A.shifts[i]; colorTag=A.colors[i]; }
+          else { src='B'; code=B.shifts[i]; colorTag=B.colors[i]; }
+        } else {
+          if(B.shifts[i]){ src='B'; code=B.shifts[i]; colorTag=B.colors[i]; }
+          else { src='A'; code=A.shifts[i]; colorTag=A.colors[i]; }
+        }
+      } else if(B){ src='B'; code=B.shifts[i]; colorTag=B.colors[i]; }
+      else { src='A'; code=A.shifts[i]; colorTag=A.colors[i]; }
+      shifts.push(code); srcTeam.push(src); colorTags.push(colorTag);
+    }
+    return {name, card, shifts, srcTeam, colorTags, hasA:!!A, hasB:!!B};
+  });
+}
+const EFFECTIVE = buildEffectiveRoster();
+const effectiveByName = {}; EFFECTIVE.forEach(p=>{ effectiveByName[p.name]=p; });
+
+/* ---------- tabs ---------- */
+function switchTab(tabName){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tabName));
+  document.querySelectorAll('.panel').forEach(p=>{p.classList.remove('active');p.classList.remove('print-target');});
+  const target = byId('panel-'+tabName);
+  target.classList.add('active'); target.classList.add('print-target');
+}
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.onclick = ()=>switchTab(btn.dataset.tab);
+});
+function goToDate(dateStr, opts){
+  opts = opts || {};
+  switchTab('date');
+  byId('dateSelect').value = dateStr;
+  renderDate(dateStr);
+  if(opts.scroll !== false){
+    byId('panel-date').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+}
+
+/* ---------- header date strip: colored by weekday / weekend / national holiday, clickable ---------- */
+(function renderHeaderStrip(){
+  const strip = byId('headerStrip');
+  strip.innerHTML = '';
+  let todayEl = null;
+  DATA.days.forEach((day, i)=>{
+    const isHoliday = isHolidayNoteDay(i);
+    const wknd = isWeekendWd(day.wd);
+    const isToday = day.date === TODAY_STR;
+    const typeCls = isHoliday ? 'holiday' : (wknd ? 'weekend' : '');
+    const typeLabel = isHoliday ? '國定假日' : (wknd ? '六、日' : '平日');
+    const el = document.createElement('div');
+    el.className = 'day' + (isToday ? ' today' : '');
+    el.innerHTML = `<div class="d">${fmtDate(day.date)}</div>
+      <div class="bar ${typeCls}" title="${day.date}（${day.wd}）・${typeLabel}${isToday?'・今天':''}・點擊查看當日排班"></div>
+      <div class="wd">${day.wd}</div>`;
+    el.addEventListener('click', ()=>goToDate(day.date));
+    strip.appendChild(el);
+    if(isToday) todayEl = el;
+  });
+  if(todayEl){
+    todayEl.scrollIntoView({inline:'center', block:'nearest'});
+  }
+})();
+
+/* ---------- overview ---------- */
+(function renderOverview(){
+  const cards = [
+    {num: EFFECTIVE.length, label:'本月排班總人數（不重複）'},
+    {num: DATA.days.length, label:'排班天數'},
+    {num: DATA.oncall.reduce((s,o)=>s+o.dates.length,0), label:'本月值班（ON）人次'},
+  ];
+  const wrap = byId('overviewCards');
+  wrap.innerHTML = '';
+  cards.forEach(c=>{
+    const d = document.createElement('div');
+    d.className = 'stat-card' + (c.warn?' warn':'');
+    d.innerHTML = `<div class="num">${c.num}</div><div class="label">${c.label}</div>`;
+    wrap.appendChild(d);
+  });
+
+  const notes = DATA.holidayNotes || [];
+  const noteDesc = byId('monthNoteDesc');
+  if(notes.length){
+    const noteText = notes.map(n=>`${n.date}（${DATA.days[n.dayIndex].wd}）${n.note}`).join('、');
+    noteDesc.innerHTML = `${noteText}。標示「國」者為休假；假日站別歸類規則僅套用於週六、日。`;
+  } else {
+    noteDesc.innerHTML = '標示「國」者為休假；假日站別歸類規則僅套用於週六、日。';
+  }
+
+  // unit breakdown across whole month (effective roster)
+  const counts = {};
+  EFFECTIVE.forEach(p=>{
+    p.shifts.forEach((code,i)=>{
+      const r = classify(code, p.srcTeam[i], p.colorTags[i], i);
+      if(isWorkingCat(r.cat)) counts[r.unit] = (counts[r.unit]||0)+1;
+    });
+  });
+  const ub = byId('unitBreakdown');
+  ub.innerHTML = '';
+  UNIT_ORDER.filter(u=>counts[u]).forEach(u=>{
+    const meta = UNIT_META[u];
+    const d = document.createElement('div');
+    d.className = 'stat-card';
+    d.style.borderLeft = `4px solid var(--${meta.cls==='u-oth'?'u-oth':meta.cls.replace('u-','u-')})`;
+    d.innerHTML = `<div class="num" style="color:inherit;"><span class="tag ${meta.cls}">${u}</span></div><div class="label" style="margin-top:8px;">${counts[u]} 班次</div>`;
+    ub.appendChild(d);
+  });
+})();
+
+/* ---------- full schedule table ---------- */
+let currentTeam = 'A';
+function renderSchedTable(team){
+  const people = team==='A' ? DATA.teamA : DATA.teamB;
+  const otherMap = team==='A' ? cardMapB : cardMapA;
+  const table = byId('schedTable');
+  let html = '<thead><tr><th class="name-col">日期</th>';
+  DATA.days.forEach((d)=>{ html += `<th class="${isWeekendWd(d.wd)?'weekend':''}">${fmtDate(d.date)}</th>`; });
+  html += '</tr><tr><th class="name-col">星期</th>';
+  DATA.days.forEach((d,i)=>{ html += `<th class="${isWeekendWd(d.wd)?'weekend':''}">${d.wd}${isHolidayNoteDay(i)?' 節':''}</th>`; });
+  html += '</tr></thead><tbody>';
+
+  people.forEach(p=>{
+    const other = otherMap[p.card];
+    html += `<tr><td class="name-col">${p.name}</td>`;
+    p.shifts.forEach((s,i)=>{
+      const colorTag = p.colors[i];
+      const r = classify(s, team, colorTag, i);
+      const cls = cssClassFor(r);
+      const hn = isHolidayNoteDay(i) ? ' holiday-note' : '';
+      const wknd = isWeekendDay(i);
+
+      // determine override: does the counterpart team win for this person/day?
+      let overridden = false, overrideTitle = '';
+      if(other && other.shifts[i]){
+        if(team==='A' && !wknd){ overridden = true; }
+        if(team==='B' && wknd){ overridden = true; }
+      }
+      if(overridden){
+        const otherTeamCode = team==='A' ? 'B' : 'A';
+        const otherColorTag = other.colors[i];
+        const or = classify(other.shifts[i], otherTeamCode, otherColorTag, i);
+        overrideTitle = `title="規則覆蓋：實際歸屬 ${or.unit || (or.cat==='off'?'休假':or.cat)}（${otherTeamCode==='A'?'上半部':'下半部'}：${other.shifts[i]}）"`;
+      }
+      html += `<td class="${cls}${hn}${wknd?' weekend-col':''}${overridden?' overridden':''}" ${overrideTitle}>${s||''}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+renderSchedTable('A');
+byId('teamToggle').onclick = e=>{
+  const btn = e.target.closest('button'); if(!btn) return;
+  document.querySelectorAll('#teamToggle button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); currentTeam = btn.dataset.team; renderSchedTable(currentTeam);
+};
+byId('printBtn').onclick = ()=>window.print();
+
+/* ---------- staff lookup ---------- */
+(function initStaffSelect(){
+  const names = EFFECTIVE.map(p=>p.name).sort((a,b)=>a.localeCompare(b,'zh-Hant'));
+  const sel = byId('staffSelect');
+  sel.innerHTML = '';
+  names.forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o); });
+  sel.onchange = ()=>renderStaff(sel.value);
+  if(names.length){ sel.value = names[0]; renderStaff(names[0]); }
+})();
+
+function statsTableHtml(stat){
+  const rows = [['例假',stat['例假']],['休假',stat['休假']],['一二週',stat['一二周']],['三四週',stat['三四周']],
+    ['休',stat['休']],['例',stat['例']],['休(%2)',stat['休(%2)']],['外',stat['外']],
+    ['H2(休)',stat['H2(休)']],['假日',stat['假日']],['H2(補)',stat['H2(補)']],['補休',stat['補休']]];
+  let html = '<table class="mini"><thead><tr>';
+  rows.forEach(r=>html+=`<th>${r[0]}</th>`);
+  html += '</tr></thead><tbody><tr>';
+  rows.forEach(r=>html+=`<td>${r[1]}</td>`);
+  html += '</tr></tbody></table>';
+  return html;
+}
+function findConsecutiveWork(catFn){
+  const runs = []; let start=-1;
+  for(let i=0;i<=DATA.days.length;i++){
+    const working = i<DATA.days.length && catFn(i);
+    if(working && start===-1) start=i;
+    if(!working && start!==-1){ runs.push([start,i-1]); start=-1; }
+  }
+  return runs.filter(r=>(r[1]-r[0]+1)>=6);
+}
+
+function renderStaff(name){
+  const wrap = byId('staffResult'); wrap.innerHTML = '';
+  const eff = effectiveByName[name];
+
+  // effective merged view (authoritative)
+  const sec0 = document.createElement('div');
+  sec0.innerHTML = `<div class="section-title">本月站別歸屬（綜合判定）</div>`;
+  const strip0 = document.createElement('div'); strip0.className='day-strip';
+  eff.shifts.forEach((s,i)=>{
+    const day = DATA.days[i];
+    const r = classify(s, eff.srcTeam[i], eff.colorTags[i], i);
+    const cls = cssClassFor(r);
+    const chip = document.createElement('div');
+    chip.className = `day-chip ${cls} ${isHolidayNoteDay(i)?'holiday-note':''}`;
+    chip.innerHTML = `<div class="dd">${fmtDate(day.date)}（${day.wd}）</div><div class="code">${s||'—'}</div><div class="unit">${r.unit || (r.cat==='off'?'休假':r.cat==='statutory'?'例假／國定':r.cat==='leave'?'請假':'')}</div>`;
+    strip0.appendChild(chip);
+  });
+  sec0.appendChild(strip0);
+
+  const runs = findConsecutiveWork(i=>isWorkingCat(classify(eff.shifts[i], eff.srcTeam[i], eff.colorTags[i], i).cat));
+  runs.forEach(r=>{
+    const banner = document.createElement('div'); banner.className='warn-banner';
+    banner.innerHTML = `⚠️ 偵測到連續 ${r[1]-r[0]+1} 天出勤（${DATA.days[r[0]].date} ～ ${DATA.days[r[1]].date}），建議留意排班負荷與休息安排。`;
+    sec0.appendChild(banner);
+  });
+  wrap.appendChild(sec0);
+
+  // raw upper/lower strips for audit
+  const a = cardMapA[eff.card], b = cardMapB[eff.card];
+  const entries = [];
+  if(a) entries.push({label:'原始：上半部（主排班表）', team:'A', person:a});
+  if(b) entries.push({label:'原始：下半部（支援排班表）', team:'B', person:b});
+  entries.forEach(entry=>{
+    const sec = document.createElement('div');
+    sec.innerHTML = `<div class="section-title">${entry.label}　卡號：${entry.person.card||'—'}</div>`;
+    const strip = document.createElement('div'); strip.className='day-strip';
+    entry.person.shifts.forEach((s,i)=>{
+      const day = DATA.days[i];
+      const colorTag = entry.person.colors[i];
+      const r = classify(s, entry.team, colorTag, i);
+      const cls = cssClassFor(r);
+      const chip = document.createElement('div');
+      chip.className = `day-chip ${cls} ${isHolidayNoteDay(i)?'holiday-note':''}`;
+      chip.innerHTML = `<div class="dd">${fmtDate(day.date)}（${day.wd}）</div><div class="code">${s||'—'}</div>`;
+      strip.appendChild(chip);
+    });
+    sec.appendChild(strip);
+    wrap.appendChild(sec);
+  });
+
+  const statA = DATA.statsA.find(s=>s.name===name);
+  const statB = DATA.statsB.find(s=>s.name===name);
+  if(statA || statB){
+    const sec = document.createElement('div');
+    sec.innerHTML = '<div class="section-title">本月統計（原始欄位對照）</div>';
+    if(statA) sec.innerHTML += statsTableHtml(statA);
+    if(statB){ sec.innerHTML += '<div style="height:8px"></div>' + statsTableHtml(statB); }
+    wrap.appendChild(sec);
+  }
+
+  const oc = DATA.oncall.find(o=>o.name===name);
+  const ocSec = document.createElement('div');
+  ocSec.innerHTML = '<div class="section-title">值班（ON）日期</div>';
+  if(oc && oc.dates.length){
+    const p = document.createElement('div'); p.className='day-people';
+    oc.dates.forEach(d=>{ const day=DATA.days[dayIndexByDate[d]]; p.innerHTML += `<div class="person-pill"><b>${d}（${day?day.wd:''}）</b><span class="tag on">ON</span></div>`; });
+    ocSec.appendChild(p);
+  } else { ocSec.innerHTML += '<div class="desc">本月無值班（ON）紀錄。</div>'; }
+  wrap.appendChild(ocSec);
+
+  const hdMatches = DATA.holidayDuty.filter(h=>h.members.includes(name));
+  const cdMatches = DATA.checkupDuty.filter(h=>h.members.includes(name));
+  if(hdMatches.length || cdMatches.length){
+    const sec = document.createElement('div');
+    sec.innerHTML = '<div class="section-title">假日／健檢輪值</div>';
+    const p = document.createElement('div'); p.className='day-people';
+    hdMatches.forEach(h=>{ p.innerHTML += `<div class="person-pill"><b>${h.date}（${h.wd}）</b><span class="tag u-b2d">假日班</span></div>`; });
+    cdMatches.forEach(h=>{ p.innerHTML += `<div class="person-pill"><b>${h.date}（${h.wd}）</b><span class="tag u-hcd">健檢</span></div>`; });
+    sec.appendChild(p); wrap.appendChild(sec);
+  }
+}
+
+/* ---------- date lookup ---------- */
+(function initDateSelect(){
+  const sel = byId('dateSelect');
+  sel.innerHTML = '';
+  DATA.days.forEach((d,i)=>{
+    const o = document.createElement('option');
+    o.value = d.date; o.textContent = `${d.date}（${d.wd}）${isHolidayNoteDay(i)?' ・'+holidayNoteText(i):''}`;
+    sel.appendChild(o);
+  });
+  sel.onchange = ()=>renderDate(sel.value);
+  renderDate(DATA.days[0].date);
+})();
+
+function renderDate(dateStr){
+  const idx = dayIndexByDate[dateStr];
+  const day = DATA.days[idx];
+  const wrap = byId('dateResult'); wrap.innerHTML = '';
+
+  const head = document.createElement('div');
+  head.innerHTML = `<h2 style="margin-bottom:6px;">${dateStr}（星期${day.wd}）${isHolidayNoteDay(idx)?'　🎏 '+holidayNoteText(idx):''}</h2>`;
+  wrap.appendChild(head);
+
+  // 值班（ON）放在最上方
+  const oc = DATA.oncall.filter(o=>o.dates.includes(dateStr)).map(o=>o.name);
+  const ocSec = document.createElement('div');
+  ocSec.innerHTML = '<div class="section-title">值班（ON）</div>';
+  const ocGrid = document.createElement('div'); ocGrid.className='day-people';
+  if(oc.length===0) ocGrid.innerHTML='<div class="desc">無資料</div>';
+  else oc.forEach(n=>{ ocGrid.innerHTML += `<div class="person-pill"><b>${n}</b><span class="tag on">ON</span></div>`; });
+  ocSec.appendChild(ocGrid); wrap.appendChild(ocSec);
+
+  // group effective roster by unit
+  const byUnit = {};
+  const offList = [], leaveList = [];
+  EFFECTIVE.forEach(p=>{
+    const code = p.shifts[idx];
+    const r = classify(code, p.srcTeam[idx], p.colorTags[idx], idx);
+    if(r.cat==='duty' || r.cat==='other'){
+      byUnit[r.unit] = byUnit[r.unit] || [];
+      byUnit[r.unit].push({name:p.name, code});
+    } else if(r.cat==='off' || r.cat==='statutory'){
+      offList.push({name:p.name, code});
+    } else if(r.cat==='leave'){
+      leaveList.push({name:p.name, code});
+    }
+  });
+
+  const dutySec = document.createElement('div');
+  dutySec.innerHTML = '<div class="section-title">上班／值勤人員（依站別分組）</div>';
+  UNIT_ORDER.filter(u=>byUnit[u] && byUnit[u].length).forEach(u=>{
+    const meta = UNIT_META[u];
+    const title = document.createElement('div');
+    title.className = `unit-group-title tag ${meta.cls}`;
+    title.textContent = `${u}（${byUnit[u].length}人）`;
+    dutySec.appendChild(title);
+    const grid = document.createElement('div'); grid.className='day-people';
+    byUnit[u].forEach(x=>{ grid.innerHTML += `<div class="person-pill"><b>${x.name}</b><span class="tag ${meta.cls}">${x.code}</span></div>`; });
+    dutySec.appendChild(grid);
+  });
+  if(Object.keys(byUnit).length===0){ dutySec.innerHTML += '<div class="desc">當日無上班人員資料。</div>'; }
+  wrap.appendChild(dutySec);
+
+  function simpleBlock(title, items){
+    const sec = document.createElement('div');
+    sec.innerHTML = `<div class="section-title">${title}</div>`;
+    const grid = document.createElement('div'); grid.className='day-people';
+    if(items.length===0){ grid.innerHTML = '<div class="desc">無資料</div>'; }
+    else items.forEach(x=>{ grid.innerHTML += `<div class="person-pill"><b>${x.name}</b><span class="tag off">${x.code}</span></div>`; });
+    sec.appendChild(grid); wrap.appendChild(sec);
+  }
+  simpleBlock('休假／例假人員', offList);
+  simpleBlock('請假人員', leaveList);
+
+  const hd = DATA.holidayDuty.find(h=>h.date===dateStr);
+  if(hd){
+    const s = document.createElement('div'); s.innerHTML = '<div class="section-title">假日班輪值小組</div>';
+    const g = document.createElement('div'); g.className='day-people';
+    hd.members.forEach(n=>{ g.innerHTML += `<div class="person-pill"><b>${n}</b><span class="tag u-b2d">假日班</span></div>`; });
+    s.appendChild(g); wrap.appendChild(s);
+  }
+  const cd = DATA.checkupDuty.find(h=>h.date===dateStr);
+  if(cd){
+    const s = document.createElement('div'); s.innerHTML = '<div class="section-title">健檢假日輪值小組</div>';
+    const g = document.createElement('div'); g.className='day-people';
+    cd.members.forEach(n=>{ g.innerHTML += `<div class="person-pill"><b>${n}</b><span class="tag u-hcd">健檢</span></div>`; });
+    s.appendChild(g); wrap.appendChild(s);
+  }
+}
+
+/* ---------- rotation tables ---------- */
+(function renderRotationTables(){
+  const hdT = byId('holidayDutyTable');
+  let html = '<thead><tr><th>日期</th><th>星期</th><th>輪值成員</th></tr></thead><tbody>';
+  DATA.holidayDuty.forEach(h=>{ html += `<tr><td>${h.date}</td><td>${h.wd}</td><td>${h.members.join('、')}</td></tr>`; });
+  html += '</tbody>'; hdT.innerHTML = html;
+
+  const cdT = byId('checkupDutyTable');
+  let html2 = '<thead><tr><th>日期</th><th>星期</th><th>輪值成員</th></tr></thead><tbody>';
+  DATA.checkupDuty.forEach(h=>{ html2 += `<tr><td>${h.date}</td><td>${h.wd}</td><td>${h.members.join('、')}</td></tr>`; });
+  html2 += '</tbody>'; cdT.innerHTML = html2;
+})();
+
+/* ---------- legend: overlap names + code table ---------- */
+(function renderOverlapNames(){
+  const names = overlapCards.map(c=>cardMapA[c].name);
+  byId('overlapNames').textContent = names.join('、') || '無';
+})();
+
+(function renderCodeTable(){
+  const codes = new Set();
+  [...DATA.teamA, ...DATA.teamB].forEach(p=>p.shifts.forEach(s=>{ if(s) codes.add(s); }));
+  const t = byId('codeTable');
+  let html = '<thead><tr><th>代碼</th><th>備註</th></tr></thead><tbody>';
+  Array.from(codes).sort().forEach(c=>{
+    html += `<tr><td class="mono">${c}</td><td>依上方規則依區塊／顏色歸類</td></tr>`;
+  });
+  html += '</tbody>';
+  t.innerHTML = html;
+})();
+
+/* ---------- open directly on today's date, if within this schedule's range (first load only) ---------- */
+if(!hasBootedOnce){
+  hasBootedOnce = true;
+  (function jumpToToday(){
+    if(dayIndexByDate[TODAY_STR] !== undefined){
+      goToDate(TODAY_STR, {scroll:false});
+    }
+  })();
+}
+
+} // end initApp()
+
+/* =========================================================================
+   資料來源：優先嘗試從 Google Apps Script 抓取雲端硬碟最新班表（JSONP，
+   避免瀏覽器 CORS 問題），失敗或未設定則使用本檔內建的靜態班表資料。
+   設定方式：把下面 APPS_SCRIPT_URL 換成你部署 Apps Script 後拿到的
+   網址（結尾為 /exec），詳細步驟請見附上的「班表同步腳本.gs」檔案開頭註解。
+   ========================================================================= */
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyXVbowDDd3e8KpXfxCUKzd2I6C-Gy0fPvkb3YMfc5bavWJs0YCh0x6EBQ12WdCSqPn/exec'; // 例如 https://script.google.com/macros/s/xxxx/exec
+const FETCH_TIMEOUT_MS = 8000;
+let currentFileId = null; // 目前選取中的檔案（下拉選單用）
+
+function isAppsScriptUrlConfigured(){
+  return typeof APPS_SCRIPT_URL === 'string' && /^https?:\/\//.test(APPS_SCRIPT_URL);
+}
+
+function loadLiveData(fileId, forceNoCache){
+  return new Promise((resolve)=>{
+    if(!isAppsScriptUrlConfigured()){ resolve(null); return; }
+    let settled = false;
+    let scriptEl, timer;
+    function settle(value){
+      if(settled) return;
+      settled = true;
+      try{ clearTimeout(timer); }catch(e){}
+      try{ delete window[cbName]; }catch(e){}
+      try{ if(scriptEl && scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl); }catch(e){}
+      resolve(value);
+    }
+    const cbName = 'onScheduleData_' + Date.now() + '_' + Math.floor(Math.random()*1e6);
+    timer = setTimeout(()=>{ settle(null); }, FETCH_TIMEOUT_MS);
+    window[cbName] = function(data){
+      try{
+        if(data && data.error){ settle(null); return; }
+        if(data && Array.isArray(data.days) && Array.isArray(data.teamA)){ settle(data); return; }
+        settle(null);
+      }catch(e){ settle(null); }
+    };
+    try{
+      scriptEl = document.createElement('script');
+      const sep = APPS_SCRIPT_URL.indexOf('?') === -1 ? '?' : '&';
+      let src = APPS_SCRIPT_URL + sep + 'callback=' + cbName + '&t=' + Date.now();
+      if(forceNoCache) src += '&nocache=1';
+      if(fileId) src += '&fileId=' + encodeURIComponent(fileId);
+      scriptEl.src = src;
+      scriptEl.onerror = function(){ settle(null); };
+      document.head.appendChild(scriptEl);
+    }catch(e){ settle(null); }
+  });
+}
+
+function renderDataSourceBanner(source, liveData){
+  const row = byId('dataSourceRow');
+  if(source === 'live'){
+    const fname = liveData && liveData.sourceFileName ? liveData.sourceFileName : '';
+    row.innerHTML = `<span class="source-badge live">☁️ 已連接雲端硬碟${fname ? '・'+fname : ''}</span>
+      <button class="refresh-btn" id="refreshBtn">重新整理</button>`;
+  } else if(source === 'error'){
+    row.innerHTML = `<span class="source-badge embedded">⚠️ 初始化發生錯誤，請按 F12 開啟主控台查看詳情</span>
+      <button class="refresh-btn" id="refreshBtn">重新整理</button>`;
+  } else {
+    const reason = isAppsScriptUrlConfigured() ? '（讀取失敗，已改用內建資料）' : '（尚未設定雲端連結，顯示內建資料）';
+    row.innerHTML = `<span class="source-badge embedded">📄 內建靜態資料 ${reason}</span>
+      <button class="refresh-btn" id="refreshBtn">重試連線</button>`;
+  }
+  const btn = byId('refreshBtn');
+  if(btn){ btn.onclick = ()=>{ btn.disabled = true; btn.textContent='讀取中…'; loadAndRender(currentFileId, true); }; }
+}
+
+function renderPeriodSelector(liveData){
+  const row = byId('periodSelectorRow');
+  if(!liveData || !Array.isArray(liveData.fileList) || liveData.fileList.length <= 1){
+    row.innerHTML = '';
+    return;
+  }
+  let html = '<span class="period-label">選擇月份：</span><select class="period-select" id="periodSelect">';
+  liveData.fileList.forEach(f=>{
+    const sel = f.id === liveData.selectedFileId ? ' selected' : '';
+    html += `<option value="${f.id}"${sel}>${f.label}</option>`;
+  });
+  html += '</select>';
+  row.innerHTML = html;
+  byId('periodSelect').onchange = (e)=>{ loadAndRender(e.target.value, false); };
+}
+
+async function loadAndRender(fileId, forceNoCache){
+  byId('dataSourceRow').innerHTML = '<span class="source-badge loading">⏳ 正在讀取班表…（最多等待 8 秒）</span>';
+  let live = null;
+  try{
+    live = await loadLiveData(fileId, forceNoCache);
+  }catch(e){
+    console.error('loadLiveData 發生例外：', e);
+    live = null;
+  }
+  DATA = live || EMBEDDED_DATA;
+  if(live) currentFileId = live.selectedFileId || fileId || null;
+  try{
+    initApp();
+    renderDataSourceBanner(live ? 'live' : 'embedded', live);
+    renderPeriodSelector(live);
+  }catch(e){
+    console.error('initApp 發生例外：', e);
+    renderDataSourceBanner('error', null);
+  }
+}
+loadAndRender(null, false);
+</script>
+</body>
+</html>
