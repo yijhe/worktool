@@ -914,7 +914,7 @@ if(!hasBootedOnce){
    設定方式：把下面 APPS_SCRIPT_URL 換成你部署 Apps Script 後拿到的
    網址（結尾為 /exec），詳細步驟請見附上的「班表同步腳本.gs」檔案開頭註解。
    ========================================================================= */
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbytP-kAfWzBO5bR5UKgUd7EeP5Y3NsMLfUKh2mYWu39JaJuMWk1ZLE8quqLeLDLhK6N/exec'; // 例如 https://script.google.com/macros/s/xxxx/exec
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzUfuzhe26p_9OqgvbRiNShbJ-rQhFl4UcqsOFhDSOnC8mIL-1hpnHnqQDxAmBBVyx7/exec'; // 例如 https://script.google.com/macros/s/xxxx/exec
 const FETCH_TIMEOUT_MS = 8000;
 let currentFileId = null; // 目前選取中的檔案（下拉選單用）
 
@@ -992,7 +992,7 @@ function renderPeriodSelector(liveData){
 }
 
 async function loadAndRender(fileId, forceNoCache){
-  byId('dataSourceRow').innerHTML = '<span class="source-badge loading">⏳ 正在讀取班表…（最多等待 8 秒）</span>';
+  byId('dataSourceRow').innerHTML = '<span class="source-badge loading">⏳ 正在讀取班表…</span>';
   let live = null;
   try{
     live = await loadLiveData(fileId, forceNoCache);
