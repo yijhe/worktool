@@ -268,7 +268,7 @@
         <table class="sched" id="schedTable"></table>
       </div>
       <div class="note-banner" style="margin-top:10px;">
-        淡化＋「◎」標記的儲存格，代表該員當日於上下半部皆有排班，依規則已由另一半部班別取代（平日以下半部為主／六日假日以上半部為主），滑鼠移至儲存格可查看實際歸屬。顏色說明請見「站別判讀規則」分頁。
+        淡化＋「◎」標記的儲存格，代表該員當日於上下半部皆有排班，依規則已由另一半部班別取代（平日以下半部為主／六日假日以上半部為主；上半部代碼為「健」則一律以下半部為主，下半部代碼為「門」則一律以上半部為主），滑鼠移至儲存格可查看實際歸屬。顏色說明請見「站別判讀規則」分頁。
       </div>
     </div>
   </section>
@@ -349,8 +349,10 @@
       <table class="mini">
         <thead><tr><th>情境</th><th>優先班別</th></tr></thead>
         <tbody>
-          <tr><td>平日（週一～週五）</td><td>以<b>下半部</b>班別為主</td></tr>
-          <tr><td>假日（週六、日）</td><td>以<b>上半部</b>班別為主</td></tr>
+          <tr><td>上半部代碼為「健」</td><td>不論平假日，一律以<b>下半部</b>班別為主</td></tr>
+          <tr><td>下半部代碼為「門」</td><td>不論平假日，一律以<b>上半部</b>班別為主</td></tr>
+          <tr><td>平日（週一～週五），以上皆不適用時</td><td>以<b>下半部</b>班別為主</td></tr>
+          <tr><td>假日（週六、日），以上皆不適用時</td><td>以<b>上半部</b>班別為主</td></tr>
         </tbody>
       </table>
       <div class="desc" style="margin-top:10px;">本月受影響人員（卡號重複）：<span id="overlapNames"></span></div>
@@ -496,6 +498,18 @@ const cardMapA = {}; DATA.teamA.forEach(p=>cardMapA[p.card]=p);
 const cardMapB = {}; DATA.teamB.forEach(p=>cardMapB[p.card]=p);
 const overlapCards = Object.keys(cardMapA).filter(c=>cardMapB[c]);
 
+// 決定「上下半部皆有排班時」當天以哪一半部為準：
+// - 上半部代碼為「健」-> 一律以下半部為主（不論平假日）
+// - 下半部代碼為「門」-> 一律以上半部為主（不論平假日）
+// - 其餘情況：平日以下半部為主、假日（六、日）以上半部為主；
+//   若該半部當天格子是空的，則退回用另一半部的值。
+function pickPrioritySource(aCode, bCode, holiday){
+  if(aCode === '健') return 'B';
+  if(bCode === '門') return 'A';
+  if(holiday) return aCode ? 'A' : 'B';
+  return bCode ? 'B' : 'A';
+}
+
 function buildEffectiveRoster(){
   const allCards = Array.from(new Set([...Object.keys(cardMapA), ...Object.keys(cardMapB)]));
   const n = DATA.days.length;
@@ -507,13 +521,9 @@ function buildEffectiveRoster(){
       const holiday = isWeekendDay(i);
       let src, code, colorTag=null;
       if(A && B){
-        if(holiday){
-          if(A.shifts[i]){ src='A'; code=A.shifts[i]; colorTag=A.colors[i]; }
-          else { src='B'; code=B.shifts[i]; colorTag=B.colors[i]; }
-        } else {
-          if(B.shifts[i]){ src='B'; code=B.shifts[i]; colorTag=B.colors[i]; }
-          else { src='A'; code=A.shifts[i]; colorTag=A.colors[i]; }
-        }
+        const pick = pickPrioritySource(A.shifts[i], B.shifts[i], holiday);
+        if(pick === 'A'){ src='A'; code=A.shifts[i]; colorTag=A.colors[i]; }
+        else { src='B'; code=B.shifts[i]; colorTag=B.colors[i]; }
       } else if(B){ src='B'; code=B.shifts[i]; colorTag=B.colors[i]; }
       else { src='A'; code=A.shifts[i]; colorTag=A.colors[i]; }
       shifts.push(code); srcTeam.push(src); colorTags.push(colorTag);
@@ -636,11 +646,13 @@ function renderSchedTable(team){
       const hn = isHolidayNoteDay(i) ? ' holiday-note' : '';
       const wknd = isWeekendDay(i);
 
-      // determine override: does the counterpart team win for this person/day?
+      // determine override: does the counterpart team actually win for this person/day?
       let overridden = false, overrideTitle = '';
       if(other && other.shifts[i]){
-        if(team==='A' && !wknd){ overridden = true; }
-        if(team==='B' && wknd){ overridden = true; }
+        const aCode = team==='A' ? s : other.shifts[i];
+        const bCode = team==='A' ? other.shifts[i] : s;
+        const pick = pickPrioritySource(aCode, bCode, wknd);
+        overridden = (pick !== team);
       }
       if(overridden){
         const otherTeamCode = team==='A' ? 'B' : 'A';
@@ -914,7 +926,7 @@ if(!hasBootedOnce){
    設定方式：把下面 APPS_SCRIPT_URL 換成你部署 Apps Script 後拿到的
    網址（結尾為 /exec），詳細步驟請見附上的「班表同步腳本.gs」檔案開頭註解。
    ========================================================================= */
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzUfuzhe26p_9OqgvbRiNShbJ-rQhFl4UcqsOFhDSOnC8mIL-1hpnHnqQDxAmBBVyx7/exec'; // 例如 https://script.google.com/macros/s/xxxx/exec
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyXVbowDDd3e8KpXfxCUKzd2I6C-Gy0fPvkb3YMfc5bavWJs0YCh0x6EBQ12WdCSqPn/exec'; // 例如 https://script.google.com/macros/s/xxxx/exec
 const FETCH_TIMEOUT_MS = 8000;
 let currentFileId = null; // 目前選取中的檔案（下拉選單用）
 
@@ -992,7 +1004,7 @@ function renderPeriodSelector(liveData){
 }
 
 async function loadAndRender(fileId, forceNoCache){
-  byId('dataSourceRow').innerHTML = '<span class="source-badge loading">⏳ 正在讀取班表…</span>';
+  byId('dataSourceRow').innerHTML = '<span class="source-badge loading">⏳ 正在讀取班表…（最多等待 8 秒）</span>';
   let live = null;
   try{
     live = await loadLiveData(fileId, forceNoCache);
